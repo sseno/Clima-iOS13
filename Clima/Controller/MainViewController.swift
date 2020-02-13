@@ -8,23 +8,37 @@
 
 import UIKit
 import LBTATools
+import CoreLocation
 
 class MainViewController: UIViewController {
     
     let backgroundImg = UIImageView(image: UIImage(named: "background"), contentMode: .scaleAspectFill)
     let conditionImg = UIImageView(image: UIImage(systemName: .init(stringLiteral: "sun.max")))
     let temperatureLabel = UILabel(text: "°C", font: .systemFont(ofSize: 90), textColor: .label)
-    var numberLabel = UILabel(text: "22", font: .boldSystemFont(ofSize: 90), textColor: .label)
+    var numberLabel = UILabel(text: "0", font: .boldSystemFont(ofSize: 90), textColor: .label)
     var cityLabel = UILabel(text: "Yogyakarta", font: .systemFont(ofSize: 30), textColor: .label)
     let searchBar: UISearchBar = UISearchBar()
     
     var weatherManager = WeatherManager()
+    let locationManager = CLLocationManager()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         setupNavBar()
         setupViews()
         weatherManager.delegate = self
+        
+        locationManager.delegate = self
+        locationManager.requestWhenInUseAuthorization()
+        locationManager.requestLocation()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        // remove navBar background color
+        self.navigationController?.navigationBar.setBackgroundImage(UIImage(), for: .default)
+        self.navigationController?.navigationBar.shadowImage = UIImage()
+        self.navigationController?.navigationBar.isTranslucent = true
     }
     
     private func setupNavBar() {
@@ -55,7 +69,7 @@ class MainViewController: UIViewController {
     }
     
     @objc private func didTapLocation(_ sender: UIBarButtonItem) {
-        //
+        locationManager.requestLocation()
     }
 }
 
@@ -85,8 +99,25 @@ extension MainViewController: WeatherManagerDelegate {
         }
     }
     
-    func didFailedWithError(error: Error) {
+    func didFailWithError(error: Error) {
         print(error)
+    }
+}
+
+// MARK: - CLLocationManagerDelegate
+extension MainViewController: CLLocationManagerDelegate {
+    
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        if let location = locations.first {
+            locationManager.stopUpdatingLocation()
+            let lat = location.coordinate.latitude
+            let lng = location.coordinate.longitude
+            weatherManager.fetchWeather(latitude: lat, longitude: lng)
+        }
+    }
+    
+    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+        print("failed to find user location \(error.localizedDescription)")
     }
 }
 

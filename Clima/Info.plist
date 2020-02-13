@@ -54,5 +54,9 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>to get the current weather for where you are</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>to get the current weather for where you are</string>
 </dict>
 </plist>
